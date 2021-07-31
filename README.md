@@ -1,36 +1,29 @@
-# OC_P6_SnowTricks
+# OC_P7_BileMo
 
-[![Codacy Badge](https://app.codacy.com/project/badge/Grade/5a451dd063364417bfce07175fbed8e2)](https://www.codacy.com/gh/fleurdeveley/OC_P6_SnowTricks/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=fleurdeveley/OC_P6_SnowTricks&amp;utm_campaign=Badge_Grade)
+TODO badge codacy
 
 ## Description of the project
-  * As a part of study project, creation of a community snowboard site.
+  * TODO
 
 ## Technologies
   * PHP 7.4
   * Symfony 5.3
   * Composer 1.10.1
-  * Bootstrap 5.0
-  * MVC
   * GitHub
 
 ## PHP Dependencies
-  * "cocur/slugify": "^4.0",
-  * "symfony/asset": "5.3.*",
-  * "symfony/mailer": "5.3.*",
-  * "symfony/security-bundle": "5.3.*",
-  * "symfony/form": "5.3.*",
-  * "symfony/validator": "5.3.*",
+  * TODO
 
 ## Source
  1. Clone the GitHub repository :
 ```
-  git clone https://github.com/fleurdeveley/OC_P6_SnowTricks.git
+  git clone https://github.com/fleurdeveley/OC_P7_BileMo.git
 ```
 
 ## Installation
  2. Enter the project file :
 ```
-  cd OC_P6_Snowtricks
+  cd OC_P7_BileMo
 ```
 
  3. Configurez vos variables d'environnement :
@@ -45,7 +38,7 @@
 
  4. Create the docker network
 ```
-  docker network create project6
+  docker network create project7
 ```
 
  5. Launch the containers
@@ -80,15 +73,14 @@
 
 ## Database
   * Connection to PHPMyAdmin : http://localhost:8081
-  * Server : project6_mysql
+  * Server : project7_mysql
   * User : admin
   * Password : password
 
 ## Access to the project
   * http://localhost:8080
-  * Login : user1@gmail.com
-  * Password : password
+  * Login : TODO
+  * Password : TODO
 
 ## Author 
 Fleur (https://github.com/fleurdeveley)
-# OC_P7_BileMo
