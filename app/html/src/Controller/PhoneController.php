@@ -9,6 +9,8 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Contracts\Cache\CacheInterface;
+use Symfony\Contracts\Cache\ItemInterface;
 
 class PhoneController extends AbstractController
 {
@@ -18,10 +20,14 @@ class PhoneController extends AbstractController
     public function index(
         PhoneRepository $phoneRepository, 
         PaginatorInterface $paginator, 
-        Request $request
+        Request $request,
+        CacheInterface $cache
         ): Response
     {
-        $data = $phoneRepository->findAll();
+        $data = $cache->get('phones', function(ItemInterface $item) use($phoneRepository){
+            $item->expiresAfter(3600);
+            return $phoneRepository->findAll();
+        });
 
         $phones = $paginator->paginate(
             $data,
