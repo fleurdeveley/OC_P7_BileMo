@@ -16,7 +16,7 @@ class Phone
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
-     * @Groups("phone:list", "phone:details")
+     * @Groups({"phone:list", "phone:details"})
      */
     private $id;
 
@@ -24,7 +24,7 @@ class Phone
      * @ORM\Column(type="string", length=255)
      * @Assert\NotBlank(message="La marque du téléphone doit être remplie.")
      * @Assert\Length(min=3, minMessage="La marque de téléphone doit faire au minimum 3 caractères.")
-     * @Groups("phone:list", "phone:details")
+     * @Groups({"phone:list", "phone:details"})
      */
     private $brand;
 
@@ -32,21 +32,21 @@ class Phone
      * @ORM\Column(type="string", length=255)
      * @Assert\NotBlank(message="Le modèle du téléphone doit être rempli.")
      * @Assert\Length(min=3, minMessage="Le modèle du téléphone doit faire au minimum 3 caractères.")
-     * @Groups("phone:list", "phone:details")
+     * @Groups({"phone:list", "phone:details"})
      */
     private $model;
 
     /**
      * @ORM\Column(type="text")
      * @Assert\NotBlank(message="La description du téléphone doit être remplie.")
-     * @Groups("phone:details")
+     * @Groups({"phone:list", "phone:details"})
      */
     private $content;
 
     /**
      * @ORM\Column(type="integer")
      * @Assert\NotBlank(message="Le prix du téléphone doit être rempli.")
-     * @Groups("phone:details")
+     * @Groups({"phone:list", "phone:details"})
      */
     private $price;
 
