@@ -2,10 +2,10 @@
 
 namespace App\DataFixtures;
 
+use Faker\Factory;
 use App\Entity\Phone;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
-use Faker\Factory;
 
 class PhoneFixtures extends Fixture
 {
