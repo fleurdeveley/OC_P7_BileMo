@@ -5,10 +5,7 @@ namespace App\Controller;
 use App\Repository\PhoneRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
-use Symfony\Component\Serializer\SerializerInterface;
 
 class PhoneController extends AbstractController
 {
@@ -30,7 +27,7 @@ class PhoneController extends AbstractController
     public function show($id, PhoneRepository $phoneRepository)
     {
         return $this->json(
-            $phoneRepository->findOneBy($id), 
+            $phoneRepository->findOneBy(['id' => $id]), 
             JsonResponse::HTTP_OK, 
             [], 
             ['groups' => 'phone:details']);
