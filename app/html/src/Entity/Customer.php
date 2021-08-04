@@ -54,7 +54,7 @@ class Customer
     private $email;
 
     /**
-     * @ORM\Column(type="integer")
+     * @ORM\Column(type="string")
      * @Assert\NotBlank(message="Veuillez renseigner un numéro de téléphone valide.")
      * @Assert\Length(min=10, max=10, minMessage="Le numéro de téléphone du client doit faire 10 caractères.")
      */
@@ -125,12 +125,12 @@ class Customer
         return $this;
     }
 
-    public function getPhoneNumber(): ?int
+    public function getPhoneNumber(): ?string
     {
         return $this->phoneNumber;
     }
 
-    public function setPhoneNumber(int $phoneNumber): self
+    public function setPhoneNumber(string $phoneNumber): self
     {
         $this->phoneNumber = $phoneNumber;
 
