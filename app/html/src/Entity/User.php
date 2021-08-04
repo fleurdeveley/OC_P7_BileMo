@@ -6,9 +6,13 @@ use App\Repository\UserRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 /**
  * @ORM\Entity(repositoryClass=UserRepository::class)
+ * @UniqueEntity(fields={"email"}, message="Cet email est déjà utilisé.")
+ * @UniqueEntity(fields={"fullName"}, message="Ce nom est déjà utilisé.")
  */
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
@@ -21,6 +25,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     /**
      * @ORM\Column(type="string", length=180, unique=true)
+     * @Assert\NotBlank(message="Veuillez renseigner un email valide.")
      */
     private $email;
 
@@ -32,11 +37,15 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     /**
      * @var string The hashed password
      * @ORM\Column(type="string")
+     * @Assert\NotBlank(message="Veuillez renseigner votre mot de passe.")
+     * @Assert\Length(min=8, minMessage="Votre mot de passe doit faire au moins 8 caractères !")
      */
     private $password;
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Assert\NotBlank(message="Veuillez renseigner un nom d'utilisateur.")
+     * @Assert\Length(min=3, minMessage="Le nom du client doit avoir au moins 3 caractères.")
      */
     private $FullName;
 
