@@ -29,14 +29,19 @@ class PhoneController extends AbstractController
             return $phoneRepository->findAll();
         });
 
-        $phones = $paginator->paginate(
+        $pagination = $paginator->paginate(
             $data,
             $request->query->getInt('page', 1),
-            5
+            $request->query->getInt('limit', 5)
         );
 
+        $result = [
+            'phones' => $pagination->getItems(), 
+            'meta' => $pagination->getPaginationData()
+        ];
+
         return $this->json(
-            $phones,
+            $result,
             JsonResponse::HTTP_OK, 
             [], 
             ['groups' => 'phone:list']);
