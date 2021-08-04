@@ -25,26 +25,27 @@ class Customer
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Assert\NotBlank(message="Le prénom et le nom du client est obligatoire.")
+     * @Assert\NotBlank(message="Veuillez renseigner le prénom et le nom d'utilisateur.")
      * @Assert\Length(min=3, minMessage="Le nom du client doit avoir au moins 3 caractères.")
      */
     private $fullName;
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Assert\NotBlank(message="Veuillez renseigner un nom et un numéro de rue.")
      */
     private $address;
 
     /**
      * @ORM\Column(type="integer")
-     * @Assert\NotBlank(message="L'adresse du client est obligatoire.")
-     * @Assert\Length(min=3, minMessage="Le nom du client doit avoir au moins 3 caractères.")
+     * @Assert\NotBlank(message="Veuillez renseigner le code postal de l'adresse.")
+     * @Assert\Length(min=5, minMessage="Le nom du client doit avoir au moins 5 caractères.")
      */
     private $postalCode;
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Assert\NotBlank(message="La ville du client est obligatoire.")
+     * @Assert\NotBlank(message="Veuillez renseigner la ville.")
      * @Assert\Length(min=3, minMessage="La ville du client doit avoir au moins 3 caractères.")
      */
     private $city;
