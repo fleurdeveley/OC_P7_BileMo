@@ -45,7 +45,18 @@ class UserController extends AbstractController
             JsonResponse::HTTP_OK,
             [],
             ['groups' => 'user:list'],
-            ['groups' => 'customer:list']
         );
+    }
+
+        /**
+     * @Route("/user/{id}", name="api_user_details", methods={"GET"})
+     */
+    public function show($id, UserRepository $userRepository)
+    {
+        return $this->json(
+            $userRepository->findOneBy(['id' => $id]), 
+            JsonResponse::HTTP_OK, 
+            [], 
+            ['groups' => 'user:details']);
     }
 }
