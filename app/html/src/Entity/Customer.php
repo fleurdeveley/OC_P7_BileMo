@@ -2,10 +2,11 @@
 
 namespace App\Entity;
 
-use App\Repository\CustomerRepository;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use App\Repository\CustomerRepository;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\Common\Collections\ArrayCollection;
+use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
@@ -20,6 +21,7 @@ class Customer
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
+     * @Groups({"user:details"})
      */
     private $id;
 
@@ -27,12 +29,14 @@ class Customer
      * @ORM\Column(type="string", length=255)
      * @Assert\NotBlank(message="Veuillez renseigner le prénom et le nom d'utilisateur.")
      * @Assert\Length(min=3, minMessage="Le nom du client doit avoir au moins 3 caractères.")
+     * @Groups({"user:details"})
      */
     private $fullName;
 
     /**
      * @ORM\Column(type="string", length=255)
      * @Assert\NotBlank(message="Veuillez renseigner un nom et un numéro de rue.")
+     * @Groups({"user:details"})
      */
     private $address;
 
@@ -40,6 +44,7 @@ class Customer
      * @ORM\Column(type="integer")
      * @Assert\NotBlank(message="Veuillez renseigner le code postal de l'adresse.")
      * @Assert\Length(min=5, minMessage="Le nom du client doit avoir au moins 5 caractères.")
+     * @Groups({"user:details"})
      */
     private $postalCode;
 
@@ -47,12 +52,14 @@ class Customer
      * @ORM\Column(type="string", length=255)
      * @Assert\NotBlank(message="Veuillez renseigner la ville.")
      * @Assert\Length(min=3, minMessage="La ville du client doit avoir au moins 3 caractères.")
+     * @Groups({"user:details"})
      */
     private $city;
 
     /**
      * @ORM\Column(type="string", length=255)
      * @Assert\NotBlank(message="Veuillez renseigner un email valide.")
+     * @Groups({"user:details"})
      */
     private $email;
 
@@ -60,6 +67,7 @@ class Customer
      * @ORM\Column(type="string")
      * @Assert\NotBlank(message="Veuillez renseigner un numéro de téléphone valide.")
      * @Assert\Length(min=10, max=10, minMessage="Le numéro de téléphone du client doit faire 10 caractères.")
+     * @Groups({"user:details"})
      */
     private $phoneNumber;
 

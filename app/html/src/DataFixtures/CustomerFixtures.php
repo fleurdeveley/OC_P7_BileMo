@@ -45,7 +45,7 @@ class CustomerFixtures extends Fixture
 
             $user->setEmail("user$u@gmail.com")
                 ->setPassword($this->hasher->hashPassword($user, 'password'))
-                ->setRoles(['ROLES_USER'])
+                ->setRoles(['ROLE_USER'])
                 ->setFullName($this->faker->name())
                 ->setCustomer($this->faker->randomElement($this->customers));
 
