@@ -1,6 +1,6 @@
 # OC_P7_BileMo
 
-TODO badge codacy
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/6bc96c0c45644b23bfc98c8de4717fee)](https://www.codacy.com/gh/fleurdeveley/OC_P7_BileMo/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=fleurdeveley/OC_P7_BileMo&amp;utm_campaign=Badge_Grade)
 
 ## Description of the project
   * TODO
