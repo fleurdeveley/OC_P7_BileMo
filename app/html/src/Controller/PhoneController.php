@@ -22,7 +22,7 @@ class PhoneController extends AbstractController
         PaginatorInterface $paginator, 
         Request $request,
         CacheInterface $cache
-        ): Response
+    ): Response
     {
         $data = $cache->get('phones', function(ItemInterface $item) use($phoneRepository){
             $item->expiresAfter(3600);
@@ -44,7 +44,8 @@ class PhoneController extends AbstractController
             $result,
             JsonResponse::HTTP_OK, 
             [], 
-            ['groups' => 'phone:list']);
+            ['groups' => 'phone:list']
+        );
     }
 
     /**
