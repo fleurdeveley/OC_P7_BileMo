@@ -119,7 +119,7 @@ class UserController extends AbstractController
         Request $request, 
         SerializerInterface $serializer, 
         EntityManagerInterface $em,
-        ValidatorInterface $validator,
+        ValidatorInterface $validator
     )
     {
         $jsonRecu = $request->getContent();
@@ -145,5 +145,22 @@ class UserController extends AbstractController
                 'message' => $e->getMessage()
             ], Response::HTTP_BAD_REQUEST);
         }
+    }
+
+    /**
+     * @Route("/user/{id}", name="api_user_delete", methods={"DELETE"})
+     */
+    public function delete(
+        User $user, 
+        EntityManagerInterface $em
+    )
+    {
+        $em->remove($user);
+        $em->flush();
+
+        return $this->json(
+            null, 
+            Response::HTTP_NO_CONTENT, 
+        );  
     }
 }
