@@ -58,7 +58,8 @@ class Customer
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Assert\NotBlank(message="Veuillez renseigner un email valide.")
+     * @Assert\Email(message="Veuillez renseigner un email valide.")
+     * @Assert\Regex(#^[a-z0-9._-]+@[a-z0-9._-]{2,}\.[a-z]{2,4}$#)
      * @Groups({"user:details"})
      */
     private $email;
@@ -66,7 +67,7 @@ class Customer
     /**
      * @ORM\Column(type="string")
      * @Assert\NotBlank(message="Veuillez renseigner un numéro de téléphone valide.")
-     * @Assert\Length(min=10, max=10, minMessage="Le numéro de téléphone du client doit faire 10 caractères.")
+     * @Assert\Regex(#^0[1-9][0-9]{8}$#)
      * @Groups({"user:details"})
      */
     private $phoneNumber;
