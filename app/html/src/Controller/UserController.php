@@ -112,7 +112,7 @@ class UserController extends AbstractController
         }
     }
 
-        /**
+    /**
      * @Route("/user/{id}", name="api_user_update", methods={"PUT"})
      */
     public function update(
@@ -120,8 +120,6 @@ class UserController extends AbstractController
         SerializerInterface $serializer, 
         EntityManagerInterface $em,
         ValidatorInterface $validator,
-        CustomerRepository $customerRepository,
-        UserPasswordHasherInterface $hasher
     )
     {
         $jsonRecu = $request->getContent();
