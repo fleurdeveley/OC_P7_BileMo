@@ -85,7 +85,6 @@ class UserController extends AbstractController
         try {
             $user = $serializer->deserialize($jsonRecu, User::class, 'json');
            
-
             $user->setPassword($hasher->hashPassword($user, 'password'))
                 ->setRoles(['ROLE_USER'])
                 ->setCustomer($customerRepository->findOneBy(['id' => 81]));
@@ -104,6 +103,43 @@ class UserController extends AbstractController
                 Response::HTTP_CREATED, 
                 [],
                 ['groups' => 'user:details']
+            );  
+        } catch(NotEncodableValueException $e) {
+            return $this->json([
+                'status' => Response::HTTP_BAD_REQUEST,
+                'message' => $e->getMessage()
+            ], Response::HTTP_BAD_REQUEST);
+        }
+    }
+
+        /**
+     * @Route("/user/{id}", name="api_user_update", methods={"PUT"})
+     */
+    public function update(
+        Request $request, 
+        SerializerInterface $serializer, 
+        EntityManagerInterface $em,
+        ValidatorInterface $validator,
+        CustomerRepository $customerRepository,
+        UserPasswordHasherInterface $hasher
+    )
+    {
+        $jsonRecu = $request->getContent();
+
+        try {
+            $user = $serializer->deserialize($jsonRecu, User::class, 'json');
+
+            $errors = $validator->validate($user);
+
+            if(count($errors) > 0) {
+                return $this->json($errors, Response::HTTP_BAD_REQUEST);
+            }
+
+            $em->flush();
+
+            return $this->json(
+                null, 
+                Response::HTTP_NO_CONTENT, 
             );  
         } catch(NotEncodableValueException $e) {
             return $this->json([
