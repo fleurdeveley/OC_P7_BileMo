@@ -137,7 +137,7 @@ class UserController extends AbstractController
 
             return $this->json(
                 null, 
-                Response::HTTP_NO_CONTENT, 
+                Response::HTTP_OK, 
             );  
         } catch(NotEncodableValueException $e) {
             return $this->json([
