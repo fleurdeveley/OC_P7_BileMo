@@ -27,7 +27,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     /**
      * @ORM\Column(type="string", length=180, unique=true)
-     * @Assert\NotBlank(message="Veuillez renseigner un email valide.")
+     * @Assert\Email(message="Veuillez renseigner un email valide.")
+     * @Assert\Regex(#^[a-z0-9._-]+@[a-z0-9._-]{2,}\.[a-z]{2,4}$#)
      * @Groups({"user:details"})
      */
     private $email;
@@ -42,7 +43,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      * @var string The hashed password
      * @ORM\Column(type="string")
      * @Assert\NotBlank(message="Veuillez renseigner votre mot de passe.")
-     * @Assert\Length(min=8, minMessage="Votre mot de passe doit faire au moins 8 caractères !")
+     * @Assert\Length(min=8, minMessage="Votre mot de passe doit faire au moins 8 caractères.")
+     * @Assert\Regex(#^[.]+$#, message="Votre mot de passe doit contenir une majuscule et un caractère spécial.")
      */
     private $password;
 
@@ -52,7 +54,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      * @Assert\Length(min=3, minMessage="Le nom du client doit avoir au moins 3 caractères.")
      * @Groups({"user:list", "user:details"})
      */
-    private $FullName;
+    private $fullName;
 
     /**
      * @ORM\ManyToOne(targetEntity=Customer::class, inversedBy="users")
@@ -151,12 +153,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function getFullName(): ?string
     {
-        return $this->FullName;
+        return $this->fullName;
     }
 
-    public function setFullName(string $FullName): self
+    public function setFullName(string $fullName): self
     {
-        $this->FullName = $FullName;
+        $this->fullName = $fullName;
 
         return $this;
     }
