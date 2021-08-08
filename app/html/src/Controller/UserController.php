@@ -80,12 +80,11 @@ class UserController extends AbstractController
         UserPasswordHasherInterface $hasher
     )
     {
-        $jsonRecu = $request->getContent();
-
         try {
-            $user = $serializer->deserialize($jsonRecu, User::class, 'json');
+
+            $user = $serializer->deserialize($request->getContent(), User::class, 'json');
            
-            $user->setPassword($hasher->hashPassword($user, 'password'))
+            $user->setPassword($hasher->hashPassword($user, $user->getPassword()))
                 ->setRoles(['ROLE_USER'])
                 ->setCustomer($customerRepository->findOneBy(['id' => 81]));
 
@@ -116,28 +115,43 @@ class UserController extends AbstractController
      * @Route("/user/{id}", name="api_user_update", methods={"PUT"})
      */
     public function update(
+        UserRepository $userRepository,
         Request $request, 
         SerializerInterface $serializer, 
         EntityManagerInterface $em,
-        ValidatorInterface $validator
+        ValidatorInterface $validator,
+        UserPasswordHasherInterface $hasher,
+        $id
     )
     {
-        $jsonRecu = $request->getContent();
-
         try {
-            $user = $serializer->deserialize($jsonRecu, User::class, 'json');
+            $user = $userRepository->findOneBy(['id' => $id]);
 
-            $errors = $validator->validate($user);
+            $userJson = $serializer->deserialize($request->getContent(), User::class, 'json');
+
+            $errors = $validator->validate($userJson);
 
             if(count($errors) > 0) {
                 return $this->json($errors, Response::HTTP_BAD_REQUEST);
             }
 
+            if($userJson->getEmail()){
+                $user->setEmail($userJson->getEmail());
+            }
+
+            if($userJson->getPassword()){
+                $user->setPassword($hasher->hashPassword($user, $userJson->getPassword()));
+            }
+
+            if($userJson->getfullName()){
+                $user->setFullName($userJson->getFullName());
+            }
+
             $em->flush();
 
             return $this->json(
-                null, 
-                Response::HTTP_OK, 
+                [],
+                Response::HTTP_OK 
             );  
         } catch(NotEncodableValueException $e) {
             return $this->json([
@@ -159,8 +173,8 @@ class UserController extends AbstractController
         $em->flush();
 
         return $this->json(
-            null, 
-            Response::HTTP_NO_CONTENT, 
+            [], 
+            Response::HTTP_NO_CONTENT
         );  
     }
 }
