@@ -22,7 +22,7 @@ class Phone
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Assert\NotBlank(message="La marque du téléphone doit être remplie.")
+     * @Assert\NotBlank(message="Veuillez renseigner une marque de téléphone valide.")
      * @Assert\Length(min=3, minMessage="La marque de téléphone doit faire au minimum 3 caractères.")
      * @Groups({"phone:list", "phone:details"})
      */
@@ -30,22 +30,22 @@ class Phone
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Assert\NotBlank(message="Le modèle du téléphone doit être rempli.")
-     * @Assert\Length(min=3, minMessage="Le modèle du téléphone doit faire au minimum 3 caractères.")
+     * @Assert\NotBlank(message="Veuillez renseigner un modèle de téléphone valide.")
+     * @Assert\Length(min=3, minMessage="Le modèle du téléphone doit faire au moins 3 caractères.")
      * @Groups({"phone:list", "phone:details"})
      */
     private $model;
 
     /**
      * @ORM\Column(type="text")
-     * @Assert\NotBlank(message="La description du téléphone doit être remplie.")
+     * @Assert\NotBlankmessage="Veuillez renseigner une description de téléphone valide.")
      * @Groups({"phone:list", "phone:details"})
      */
     private $content;
 
     /**
      * @ORM\Column(type="integer")
-     * @Assert\NotBlank(message="Le prix du téléphone doit être rempli.")
+     * @Assert\NotBlank(message="Veuillez renseigner un prix de téléphone valide.")
      * @Groups({"phone:list", "phone:details"})
      */
     private $price;
