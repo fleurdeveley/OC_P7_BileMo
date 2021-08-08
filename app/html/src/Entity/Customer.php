@@ -21,7 +21,6 @@ class Customer
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
-     * @Groups({"user:details"})
      */
     private $id;
 
@@ -29,14 +28,12 @@ class Customer
      * @ORM\Column(type="string", length=255)
      * @Assert\NotBlank(message="Veuillez renseigner le prénom et le nom d'utilisateur.")
      * @Assert\Length(min=3, minMessage="Le nom du client doit avoir au moins 3 caractères.")
-     * @Groups({"user:details"})
      */
     private $fullName;
 
     /**
      * @ORM\Column(type="string", length=255)
      * @Assert\NotBlank(message="Veuillez renseigner un nom et un numéro de rue.")
-     * @Groups({"user:details"})
      */
     private $address;
 
@@ -44,7 +41,6 @@ class Customer
      * @ORM\Column(type="integer")
      * @Assert\NotBlank(message="Veuillez renseigner le code postal de l'adresse.")
      * @Assert\Length(min=5, minMessage="Le nom du client doit avoir au moins 5 caractères.")
-     * @Groups({"user:details"})
      */
     private $postalCode;
 
@@ -52,23 +48,19 @@ class Customer
      * @ORM\Column(type="string", length=255)
      * @Assert\NotBlank(message="Veuillez renseigner la ville.")
      * @Assert\Length(min=3, minMessage="La ville du client doit avoir au moins 3 caractères.")
-     * @Groups({"user:details"})
      */
     private $city;
 
     /**
      * @ORM\Column(type="string", length=255)
      * @Assert\Email(message="Veuillez renseigner un email valide.")
-     * @Assert\Regex(#^[a-z0-9._-]+@[a-z0-9._-]{2,}\.[a-z]{2,4}$#)
-     * @Groups({"user:details"})
      */
     private $email;
 
     /**
      * @ORM\Column(type="string")
      * @Assert\NotBlank(message="Veuillez renseigner un numéro de téléphone valide.")
-     * @Assert\Regex(#^0[1-9][0-9]{8}$#)
-     * @Groups({"user:details"})
+     * @Assert\Regex("/^0[1-9][0-9]{8}$/")
      */
     private $phoneNumber;
 

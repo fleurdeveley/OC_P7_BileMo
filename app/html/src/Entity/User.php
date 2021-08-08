@@ -7,13 +7,13 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Annotation\Ignore;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 /**
  * @ORM\Entity(repositoryClass=UserRepository::class)
  * @UniqueEntity(fields={"email"}, message="Cet email est déjà utilisé.")
- * @UniqueEntity(fields={"fullName"}, message="Ce nom est déjà utilisé.")
  */
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
@@ -28,8 +28,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     /**
      * @ORM\Column(type="string", length=180, unique=true)
      * @Assert\Email(message="Veuillez renseigner un email valide.")
-     * @Assert\Regex(#^[a-z0-9._-]+@[a-z0-9._-]{2,}\.[a-z]{2,4}$#)
-     * @Groups({"user:details"})
+     * @Groups({"user:list", "user:details"})
      */
     private $email;
 
@@ -43,8 +42,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      * @var string The hashed password
      * @ORM\Column(type="string")
      * @Assert\NotBlank(message="Veuillez renseigner votre mot de passe.")
-     * @Assert\Length(min=8, minMessage="Votre mot de passe doit faire au moins 8 caractères.")
-     * @Assert\Regex(#^[.]+$#, message="Votre mot de passe doit contenir une majuscule et un caractère spécial.")
+     * @Assert\Regex("/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/", message="Votre mot de passe doit contenir au moins 8 caractères, une lettre minuscule, un chiffre et un caractère spécial.")
      */
     private $password;
 
@@ -58,7 +56,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     /**
      * @ORM\ManyToOne(targetEntity=Customer::class, inversedBy="users")
-     * @Groups({"user:details"})
+     * @Ignore()
      */
     private $customer;
 
