@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use DateTime;
 use App\Entity\User;
 use App\Repository\UserRepository;
 use App\Repository\CustomerRepository;
@@ -21,19 +22,36 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 class UserController extends AbstractController
 {
+    protected $cache;
+    protected $userRepository;
+    protected $serializer;
+    protected $validator;
+    protected $hasher;
+
+    public function __construct(
+        CacheInterface $cache, 
+        UserRepository $userRepository,
+        SerializerInterface $serializer,
+        ValidatorInterface $validator,
+        UserPasswordHasherInterface $hasher
+    ) {
+        $this->cache = $cache;
+        $this->userRepository = $userRepository;
+        $this->serializer = $serializer;
+        $this->validator = $validator;
+        $this->hasher = $hasher;
+    }
+
     /**
      * @Route("/user", name="api_user_list", methods={"GET"})
      */
-    public function index(
-        UserRepository $userRepository,
-        PaginatorInterface $paginator,
-        Request $request,
-        CacheInterface $cache
-    ): Response
+    public function index(PaginatorInterface $paginator, Request $request): Response
     {
-        $data = $cache->get('users', function(ItemInterface $item) use($userRepository){
+        $userRepository = $this->userRepository;
+
+        $data = $this->cache->get('users', function(ItemInterface $item) use($userRepository){
             $item->expiresAfter(3600);
-            return $userRepository->findAll();
+            return $this->userRepository->findAll();
         });
 
         $pagination = $paginator->paginate(
@@ -58,10 +76,10 @@ class UserController extends AbstractController
     /**
      * @Route("/user/{id}", name="api_user_details", methods={"GET"})
      */
-    public function show($id, UserRepository $userRepository)
+    public function show($id)
     {
         return $this->json(
-            $userRepository->findOneBy(['id' => $id]), 
+            $this->userRepository->findOneBy(['id' => $id]), 
             JsonResponse::HTTP_OK, 
             [], 
             ['groups' => 'user:details']
@@ -73,22 +91,20 @@ class UserController extends AbstractController
      */
     public function create(
         Request $request, 
-        SerializerInterface $serializer, 
         EntityManagerInterface $em,
-        ValidatorInterface $validator,
-        CustomerRepository $customerRepository,
-        UserPasswordHasherInterface $hasher
+        CustomerRepository $customerRepository
     )
     {
         try {
-
-            $user = $serializer->deserialize($request->getContent(), User::class, 'json');
+            $user = $this->serializer->deserialize($request->getContent(), User::class, 'json');
            
-            $user->setPassword($hasher->hashPassword($user, $user->getPassword()))
+            $user->setPassword($this->hasher->hashPassword($user, $user->getPassword()))
                 ->setRoles(['ROLE_USER'])
-                ->setCustomer($customerRepository->findOneBy(['id' => 81]));
+                ->setCustomer($customerRepository->findOneBy(['id' => 1]))
+                ->setCreatedAt(new DateTime())
+                ->setUpdatedAt(new DateTime());
 
-            $errors = $validator->validate($user);
+            $errors = $this->validator->validate($user);
 
             if(count($errors) > 0) {
                 return $this->json($errors, Response::HTTP_BAD_REQUEST);
@@ -96,6 +112,8 @@ class UserController extends AbstractController
 
             $em->persist($user);
             $em->flush();
+
+            $this->cache->delete('users');
 
             return $this->json(
                 $user, 
@@ -114,22 +132,14 @@ class UserController extends AbstractController
     /**
      * @Route("/user/{id}", name="api_user_update", methods={"PUT"})
      */
-    public function update(
-        UserRepository $userRepository,
-        Request $request, 
-        SerializerInterface $serializer, 
-        EntityManagerInterface $em,
-        ValidatorInterface $validator,
-        UserPasswordHasherInterface $hasher,
-        $id
-    )
+    public function update(Request $request, EntityManagerInterface $em, $id)
     {
         try {
-            $user = $userRepository->findOneBy(['id' => $id]);
+            $user = $this->userRepository->findOneBy(['id' => $id]);
 
-            $userJson = $serializer->deserialize($request->getContent(), User::class, 'json');
+            $userJson = $this->serializer->deserialize($request->getContent(), User::class, 'json');
 
-            $errors = $validator->validate($userJson);
+            $errors = $this->validator->validate($userJson);
 
             if(count($errors) > 0) {
                 return $this->json($errors, Response::HTTP_BAD_REQUEST);
@@ -140,14 +150,18 @@ class UserController extends AbstractController
             }
 
             if($userJson->getPassword()){
-                $user->setPassword($hasher->hashPassword($user, $userJson->getPassword()));
+                $user->setPassword($this->hasher->hashPassword($user, $userJson->getPassword()));
             }
 
             if($userJson->getfullName()){
                 $user->setFullName($userJson->getFullName());
             }
 
+            $user->setUpdatedAt(new DateTime());
+
             $em->flush();
+
+            $this->cache->delete('users');
 
             return $this->json(
                 [],
@@ -164,13 +178,12 @@ class UserController extends AbstractController
     /**
      * @Route("/user/{id}", name="api_user_delete", methods={"DELETE"})
      */
-    public function delete(
-        User $user, 
-        EntityManagerInterface $em
-    )
+    public function delete(User $user, EntityManagerInterface $em)
     {
         $em->remove($user);
         $em->flush();
+
+        $this->cache->delete('users');
 
         return $this->json(
             [], 

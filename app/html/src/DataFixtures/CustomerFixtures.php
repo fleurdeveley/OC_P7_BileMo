@@ -4,6 +4,7 @@ namespace App\DataFixtures;
 
 use App\Entity\Customer;
 use App\Entity\User;
+use DateTime;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
 use Faker\Factory;
@@ -32,7 +33,9 @@ class CustomerFixtures extends Fixture
                 ->setPostalCode(mt_rand(10000, 99999))
                 ->setCity($this->faker->city())
                 ->setEmail("user$c@gmail.com")
-                ->setPhoneNumber($this->faker->phoneNumber());
+                ->setPhoneNumber($this->faker->phoneNumber())
+                ->setCreatedAt(new DateTime())
+                ->setUpdatedAt(new DateTime());
 
             $manager->persist($customer);
 
@@ -47,7 +50,9 @@ class CustomerFixtures extends Fixture
                 ->setPassword($this->hasher->hashPassword($user, 'password'))
                 ->setRoles(['ROLE_USER'])
                 ->setFullName($this->faker->name())
-                ->setCustomer($this->faker->randomElement($this->customers));
+                ->setCustomer($this->faker->randomElement($this->customers))
+                ->setCreatedAt(new DateTime())
+                ->setUpdatedAt(new DateTime());
 
             $manager->persist($user);
         }

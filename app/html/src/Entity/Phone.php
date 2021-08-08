@@ -38,7 +38,7 @@ class Phone
 
     /**
      * @ORM\Column(type="text")
-     * @Assert\NotBlankmessage="Veuillez renseigner une description de téléphone valide.")
+     * @Assert\NotBlank(message="Veuillez renseigner une description de téléphone valide.")
      * @Groups({"phone:list", "phone:details"})
      */
     private $content;
@@ -49,6 +49,16 @@ class Phone
      * @Groups({"phone:list", "phone:details"})
      */
     private $price;
+
+    /**
+     * @ORM\Column(type="datetime")
+     */
+    private $createdAt;
+
+    /**
+     * @ORM\Column(type="datetime")
+     */
+    private $updatedAt;
 
     public function getId(): ?int
     {
@@ -99,6 +109,30 @@ class Phone
     public function setPrice(int $price): self
     {
         $this->price = $price;
+
+        return $this;
+    }
+
+    public function getCreatedAt(): ?\DateTimeInterface
+    {
+        return $this->createdAt;
+    }
+
+    public function setCreatedAt(\DateTimeInterface $createdAt): self
+    {
+        $this->createdAt = $createdAt;
+
+        return $this;
+    }
+
+    public function getUpdatedAt(): ?\DateTimeInterface
+    {
+        return $this->updatedAt;
+    }
+
+    public function setUpdatedAt(\DateTimeInterface $updatedAt): self
+    {
+        $this->updatedAt = $updatedAt;
 
         return $this;
     }

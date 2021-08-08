@@ -2,10 +2,11 @@
 
 namespace App\DataFixtures;
 
+use DateTime;
 use Faker\Factory;
 use App\Entity\Phone;
-use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
+use Doctrine\Bundle\FixturesBundle\Fixture;
 
 class PhoneFixtures extends Fixture
 {
@@ -60,7 +61,9 @@ class PhoneFixtures extends Fixture
             $phone->setBrand($faker->randomElement($brand))
                 ->setModel($faker->randomElement($model))
                 ->setContent($faker->randomElement($content))
-                ->setPrice(mt_rand(500, 1500));
+                ->setPrice(mt_rand(500, 1500))
+                ->setCreatedAt(new DateTime())
+                ->setUpdatedAt(new DateTime());
 
             $manager->persist($phone);
         }
