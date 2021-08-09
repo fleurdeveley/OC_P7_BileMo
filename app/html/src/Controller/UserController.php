@@ -49,11 +49,6 @@ class UserController extends AbstractController
     {
         $userRepository = $this->userRepository;
 
-        // rechercher tous les utilisateurs qui ont le même customer que l'utilisateur authentifié
-        // $customerId = $this->getUser()->getCustomer()->getId();
-        // enregistrer dans le cache la liste correspondant au customer de l'utilisateur authentifié
-        // $userBdd = $this->userRepository->find(['customer_id' => $customerId]);
-
         $customer_id = $this->getUser()->getCustomer()->getId();
 
         $key = 'users_' . $customer_id;
