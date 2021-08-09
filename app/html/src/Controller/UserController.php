@@ -49,9 +49,18 @@ class UserController extends AbstractController
     {
         $userRepository = $this->userRepository;
 
-        $data = $this->cache->get('users', function(ItemInterface $item) use($userRepository){
+        // rechercher tous les utilisateurs qui ont le même customer que l'utilisateur authentifié
+        // $customerId = $this->getUser()->getCustomer()->getId();
+        // enregistrer dans le cache la liste correspondant au customer de l'utilisateur authentifié
+        // $userBdd = $this->userRepository->find(['customer_id' => $customerId]);
+
+        $customer_id = $this->getUser()->getCustomer()->getId();
+
+        $key = 'users_' . $customer_id;
+
+        $data = $this->cache->get($key, function(ItemInterface $item) use($userRepository, $customer_id){
             $item->expiresAfter(3600);
-            return $this->userRepository->findAll();
+            return $userRepository->findBy(['customer' => $customer_id]);
         });
 
         $pagination = $paginator->paginate(
@@ -78,12 +87,22 @@ class UserController extends AbstractController
      */
     public function show($id)
     {
-        return $this->json(
-            $this->userRepository->findOneBy(['id' => $id]), 
-            JsonResponse::HTTP_OK, 
-            [], 
-            ['groups' => 'user:details']
-        );
+        $customerId = $this->getUser()->getCustomer()->getId();
+
+        $userBdd = $this->userRepository->findOneBy(['id' => $id]);
+
+        if($userBdd->getCustomer()->getId() === $customerId) {
+            return $this->json(
+                $userBdd, 
+                JsonResponse::HTTP_OK, 
+                [], 
+                ['groups' => 'user:details']
+            );
+        } else {
+            return $this->json([
+                'status' => Response::HTTP_UNAUTHORIZED,
+            ], Response::HTTP_UNAUTHORIZED);
+        }
     }
 
     /**
@@ -97,14 +116,16 @@ class UserController extends AbstractController
     {
         try {
             $user = $this->serializer->deserialize($request->getContent(), User::class, 'json');
-           
-            $user->setPassword($this->hasher->hashPassword($user, $user->getPassword()))
-                ->setRoles(['ROLE_USER'])
-                ->setCustomer($customerRepository->findOneBy(['id' => 1]))
-                ->setCreatedAt(new DateTime())
-                ->setUpdatedAt(new DateTime());
+
+            $customerId = $this->getUser()->getCustomer()->getId();
 
             $errors = $this->validator->validate($user);
+
+            $user->setPassword($this->hasher->hashPassword($user, $user->getPassword()))
+                ->setRoles(['ROLE_USER'])
+                ->setCustomer($customerRepository->findOneBy(['id' => $customerId]))
+                ->setCreatedAt(new DateTime())
+                ->setUpdatedAt(new DateTime());
 
             if(count($errors) > 0) {
                 return $this->json($errors, Response::HTTP_BAD_REQUEST);
@@ -113,7 +134,7 @@ class UserController extends AbstractController
             $em->persist($user);
             $em->flush();
 
-            $this->cache->delete('users');
+            $this->cache->delete('users_' . $customerId);
 
             return $this->json(
                 $user, 
@@ -161,7 +182,9 @@ class UserController extends AbstractController
 
             $em->flush();
 
-            $this->cache->delete('users');
+            $customerId = $this->getUser()->getCustomer()->getId();
+
+            $this->cache->delete('users_' . $customerId);
 
             return $this->json(
                 [],
@@ -183,7 +206,9 @@ class UserController extends AbstractController
         $em->remove($user);
         $em->flush();
 
-        $this->cache->delete('users');
+        $customerId = $this->getUser()->getCustomer()->getId();
+
+        $this->cache->delete('users_' . $customerId);
 
         return $this->json(
             [], 
