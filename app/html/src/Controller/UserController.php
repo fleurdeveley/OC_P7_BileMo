@@ -7,6 +7,8 @@ use App\Entity\User;
 use App\Repository\UserRepository;
 use App\Repository\CustomerRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use JMS\Serializer\SerializationContext;
+use JMS\Serializer\Serializer;
 use Symfony\Contracts\Cache\ItemInterface;
 use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Contracts\Cache\CacheInterface;
@@ -19,6 +21,7 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Serializer\Exception\NotEncodableValueException;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use JMS\Serializer\SerializerInterface as JMSInterface;
 
 class UserController extends AbstractController
 {
@@ -34,7 +37,8 @@ class UserController extends AbstractController
         SerializerInterface $serializer,
         ValidatorInterface $validator,
         UserPasswordHasherInterface $hasher
-    ) {
+    ) 
+    {
         $this->cache = $cache;
         $this->userRepository = $userRepository;
         $this->serializer = $serializer;
@@ -45,7 +49,11 @@ class UserController extends AbstractController
     /**
      * @Route("/user", name="api_user_list", methods={"GET"})
      */
-    public function index(PaginatorInterface $paginator, Request $request): Response
+    public function index(
+        PaginatorInterface $paginator, 
+        Request $request, 
+        JMSInterface $serializer
+    ): Response
     {
         $userRepository = $this->userRepository;
 
@@ -53,7 +61,11 @@ class UserController extends AbstractController
 
         $key = 'users_' . $customer_id;
 
-        $data = $this->cache->get($key, function(ItemInterface $item) use($userRepository, $customer_id){
+        $data = $this->cache->get(
+            $key, 
+            function(ItemInterface $item) 
+            use($userRepository, $customer_id
+        ){
             $item->expiresAfter(3600);
             return $userRepository->findBy(['customer' => $customer_id]);
         });
@@ -69,29 +81,39 @@ class UserController extends AbstractController
             'meta' => $pagination->getPaginationData()
         ];
 
-        return $this->json(
+        $json = $serializer->serialize(
             $result,
-            JsonResponse::HTTP_OK,
-            [],
-            ['groups' => 'user:list'],
+            'json', 
+            SerializationContext::create()->setGroups(array('user:list'))
+        );
+
+        return new Response(
+            $json, 
+            Response::HTTP_OK, 
+            array('Content-Type' => 'application/json')
         );
     }
 
     /**
      * @Route("/user/{id}", name="api_user_details", methods={"GET"})
      */
-    public function show($id)
+    public function show($id, JMSInterface $serializer)
     {
         $customerId = $this->getUser()->getCustomer()->getId();
 
         $userBdd = $this->userRepository->findOneBy(['id' => $id]);
 
         if($userBdd->getCustomer()->getId() === $customerId) {
-            return $this->json(
+            $json = $serializer->serialize(
                 $userBdd, 
-                JsonResponse::HTTP_OK, 
-                [], 
-                ['groups' => 'user:details']
+                'json', 
+                SerializationContext::create()->setGroups(array('user:details'))
+            );
+
+            return new Response(
+                $json, 
+                Response::HTTP_OK, 
+                array('Content-Type' => 'application/json')
             );
         } else {
             return $this->json([
