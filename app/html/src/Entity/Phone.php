@@ -2,13 +2,34 @@
 
 namespace App\Entity;
 
-use Doctrine\ORM\Mapping as ORM;
 use App\Repository\PhoneRepository;
-use Symfony\Component\Serializer\Annotation\Groups;
+use Doctrine\ORM\Mapping as ORM;
+use Hateoas\Configuration\Annotation as Hateoas;
+use JMS\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @ORM\Entity(repositoryClass=PhoneRepository::class)
+ * 
+ * @Hateoas\Relation(
+ *     name = "self",
+ *     href = @Hateoas\Route(
+ *         "api_phone_details",
+ *         parameters = { "id" = "expr(object.getId())" },
+ *         absolute = true,
+ *     ),
+ *     attributes = {"actions": { "read": "GET"}},
+ *     exclusion = @Hateoas\Exclusion(groups = {"phone:list", "phone:details"})
+ * )
+ * @Hateoas\Relation(
+ *     name = "all",
+ *     href = @Hateoas\Route(
+ *         "api_phone_list",
+ *         absolute = true
+ *     ),
+ *     attributes = {"actions": { "read": "GET" }},
+ *     exclusion = @Hateoas\Exclusion(groups = {"phone:details"})
+ * )
  */
 class Phone
 {
