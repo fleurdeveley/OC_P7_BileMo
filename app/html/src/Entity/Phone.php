@@ -2,13 +2,34 @@
 
 namespace App\Entity;
 
-use Doctrine\ORM\Mapping as ORM;
 use App\Repository\PhoneRepository;
-use Symfony\Component\Serializer\Annotation\Groups;
+use Doctrine\ORM\Mapping as ORM;
+use Hateoas\Configuration\Annotation as Hateoas;
+use JMS\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @ORM\Entity(repositoryClass=PhoneRepository::class)
+ * 
+ * @Hateoas\Relation(
+ *     name = "self",
+ *     href = @Hateoas\Route(
+ *         "api_phone_details",
+ *         parameters = { "id" = "expr(object.getId())" },
+ *         absolute = true,
+ *     ),
+ *     attributes = {"actions": { "read": "GET"}},
+ *     exclusion = @Hateoas\Exclusion(groups = {"phone:list", "phone:details"})
+ * )
+ * @Hateoas\Relation(
+ *     name = "all",
+ *     href = @Hateoas\Route(
+ *         "api_phone_list",
+ *         absolute = true
+ *     ),
+ *     attributes = {"actions": { "read": "GET" }},
+ *     exclusion = @Hateoas\Exclusion(groups = {"phone:details"})
+ * )
  */
 class Phone
 {
@@ -22,7 +43,7 @@ class Phone
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Assert\NotBlank(message="La marque du téléphone doit être remplie.")
+     * @Assert\NotBlank(message="Veuillez renseigner une marque de téléphone valide.")
      * @Assert\Length(min=3, minMessage="La marque de téléphone doit faire au minimum 3 caractères.")
      * @Groups({"phone:list", "phone:details"})
      */
@@ -30,25 +51,35 @@ class Phone
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Assert\NotBlank(message="Le modèle du téléphone doit être rempli.")
-     * @Assert\Length(min=3, minMessage="Le modèle du téléphone doit faire au minimum 3 caractères.")
+     * @Assert\NotBlank(message="Veuillez renseigner un modèle de téléphone valide.")
+     * @Assert\Length(min=3, minMessage="Le modèle du téléphone doit faire au moins 3 caractères.")
      * @Groups({"phone:list", "phone:details"})
      */
     private $model;
 
     /**
      * @ORM\Column(type="text")
-     * @Assert\NotBlank(message="La description du téléphone doit être remplie.")
+     * @Assert\NotBlank(message="Veuillez renseigner une description de téléphone valide.")
      * @Groups({"phone:list", "phone:details"})
      */
     private $content;
 
     /**
      * @ORM\Column(type="integer")
-     * @Assert\NotBlank(message="Le prix du téléphone doit être rempli.")
+     * @Assert\NotBlank(message="Veuillez renseigner un prix de téléphone valide.")
      * @Groups({"phone:list", "phone:details"})
      */
     private $price;
+
+    /**
+     * @ORM\Column(type="datetime")
+     */
+    private $createdAt;
+
+    /**
+     * @ORM\Column(type="datetime")
+     */
+    private $updatedAt;
 
     public function getId(): ?int
     {
@@ -99,6 +130,30 @@ class Phone
     public function setPrice(int $price): self
     {
         $this->price = $price;
+
+        return $this;
+    }
+
+    public function getCreatedAt(): ?\DateTimeInterface
+    {
+        return $this->createdAt;
+    }
+
+    public function setCreatedAt(\DateTimeInterface $createdAt): self
+    {
+        $this->createdAt = $createdAt;
+
+        return $this;
+    }
+
+    public function getUpdatedAt(): ?\DateTimeInterface
+    {
+        return $this->updatedAt;
+    }
+
+    public function setUpdatedAt(\DateTimeInterface $updatedAt): self
+    {
+        $this->updatedAt = $updatedAt;
 
         return $this;
     }

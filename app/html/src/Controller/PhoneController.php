@@ -3,6 +3,9 @@
 namespace App\Controller;
 
 use App\Repository\PhoneRepository;
+use JMS\Serializer\SerializationContext;
+use JMS\Serializer\Serializer;
+use JMS\Serializer\SerializerInterface as JMSInterface;
 use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -14,16 +17,27 @@ use Symfony\Contracts\Cache\ItemInterface;
 
 class PhoneController extends AbstractController
 {
+    protected $phoneRepository;
+
+    public function __construct(
+        PhoneRepository $phoneRepository
+    )
+    {
+        $this->phoneRepository = $phoneRepository;
+    }
+
     /**
      * @Route("/phone", name="api_phone_list", methods={"GET"})
      */
     public function index(
-        PhoneRepository $phoneRepository, 
         PaginatorInterface $paginator, 
         Request $request,
-        CacheInterface $cache
+        CacheInterface $cache,
+        JMSInterface $serializer
     ): Response
     {
+        $phoneRepository = $this->phoneRepository;
+
         $data = $cache->get('phones', function(ItemInterface $item) use($phoneRepository){
             $item->expiresAfter(3600);
             return $phoneRepository->findAll();
@@ -40,23 +54,35 @@ class PhoneController extends AbstractController
             'meta' => $pagination->getPaginationData()
         ];
 
-        return $this->json(
+        $json = $serializer->serialize(
             $result,
-            JsonResponse::HTTP_OK, 
-            [], 
-            ['groups' => 'phone:list']
+            'json', 
+            SerializationContext::create()->setGroups(array('phone:list'))
+        );
+
+        return new Response(
+            $json, 
+            Response::HTTP_OK, 
+            array('Content-Type' => 'application/json')
         );
     }
 
     /**
      * @Route("/phone/{id}", name="api_phone_details", methods={"GET"})
      */
-    public function show($id, PhoneRepository $phoneRepository)
+    public function show($id, JMSInterface $serializer)
     {
-        return $this->json(
-            $phoneRepository->findOneBy(['id' => $id]), 
-            JsonResponse::HTTP_OK, 
-            [], 
-            ['groups' => 'phone:details']);
+        $phone = $this->phoneRepository->findOneBy(['id' => $id]);
+
+        $json = $serializer->serialize(
+            $phone, 
+            'json', 
+            SerializationContext::create()->setGroups(array('phone:details'))
+        );
+
+        return new Response(
+            $json, 
+            JsonResponse::HTTP_OK, array('Content-Type' => 'application/json')
+        );
     }
 }
