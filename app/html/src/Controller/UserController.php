@@ -63,10 +63,7 @@ class UserController extends AbstractController
         $data = $this->cache->get(
             $key,
             function (ItemInterface $item)
-            use (
-                $userRepository,
-                $customer_id
-            ) {
+            use ($userRepository, $customer_id) {
                 $item->expiresAfter(3600);
                 return $userRepository->findBy(['customer' => $customer_id]);
             }
@@ -105,14 +102,14 @@ class UserController extends AbstractController
 
         $userBdd = $this->userRepository->findOneBy(['id' => $id]);
 
-        if($userBdd === null) {
+        if ($userBdd === null) {
             throw new Exception('user not found', Response::HTTP_NOT_FOUND);
         }
 
         if ($userBdd->getCustomer()->getId() !== $customerId) {
             throw new Exception('unauthorized', Response::HTTP_UNAUTHORIZED);
         }
-        
+
         $json = $serializer->serialize(
             $userBdd,
             'json',
@@ -134,40 +131,34 @@ class UserController extends AbstractController
         EntityManagerInterface $em,
         CustomerRepository $customerRepository
     ) {
-        try {
-            $user = $this->serializer->deserialize($request->getContent(), User::class, 'json');
+        $user = $this->serializer->deserialize($request->getContent(), User::class, 'json');
 
-            $customerId = $this->getUser()->getCustomer()->getId();
+        $customerId = $this->getUser()->getCustomer()->getId();
 
-            $errors = $this->validator->validate($user);
+        $errors = $this->validator->validate($user);
 
-            $user->setPassword($this->hasher->hashPassword($user, $user->getPassword()))
-                ->setRoles(['ROLE_USER'])
-                ->setCustomer($customerRepository->findOneBy(['id' => $customerId]))
-                ->setCreatedAt(new DateTime())
-                ->setUpdatedAt(new DateTime());
-
-            if (count($errors) > 0) {
-                return $this->json($errors, Response::HTTP_BAD_REQUEST);
-            }
-
-            $em->persist($user);
-            $em->flush();
-
-            $this->cache->delete('users_' . $customerId);
-
-            return $this->json(
-                $user,
-                Response::HTTP_CREATED,
-                [],
-                ['groups' => 'user:details']
-            );
-        } catch (NotEncodableValueException $e) {
-            return $this->json([
-                'status' => Response::HTTP_BAD_REQUEST,
-                'message' => $e->getMessage()
-            ], Response::HTTP_BAD_REQUEST);
+        if (count($errors) > 0) {
+            $errorsString = (string) $errors;
+            throw new Exception($errorsString, Response::HTTP_BAD_REQUEST);
         }
+
+        $user->setPassword($this->hasher->hashPassword($user, $user->getPassword()))
+            ->setRoles(['ROLE_USER'])
+            ->setCustomer($customerRepository->findOneBy(['id' => $customerId]))
+            ->setCreatedAt(new DateTime())
+            ->setUpdatedAt(new DateTime());
+
+        $em->persist($user);
+        $em->flush();
+
+        $this->cache->delete('users_' . $customerId);
+
+        return $this->json(
+            $user,
+            Response::HTTP_CREATED,
+            [],
+            ['groups' => 'user:details']
+        );
     }
 
     /**
@@ -175,47 +166,41 @@ class UserController extends AbstractController
      */
     public function update(Request $request, EntityManagerInterface $em, $id)
     {
-        try {
-            $user = $this->userRepository->findOneBy(['id' => $id]);
+        $user = $this->userRepository->findOneBy(['id' => $id]);
 
-            $userJson = $this->serializer->deserialize($request->getContent(), User::class, 'json');
+        $userJson = $this->serializer->deserialize($request->getContent(), User::class, 'json');
 
-            $errors = $this->validator->validate($userJson);
+        $errors = $this->validator->validate($userJson);
 
-            if (count($errors) > 0) {
-                return $this->json($errors, Response::HTTP_BAD_REQUEST);
-            }
-
-            if ($userJson->getEmail()) {
-                $user->setEmail($userJson->getEmail());
-            }
-
-            if ($userJson->getPassword()) {
-                $user->setPassword($this->hasher->hashPassword($user, $userJson->getPassword()));
-            }
-
-            if ($userJson->getfullName()) {
-                $user->setFullName($userJson->getFullName());
-            }
-
-            $user->setUpdatedAt(new DateTime());
-
-            $em->flush();
-
-            $customerId = $this->getUser()->getCustomer()->getId();
-
-            $this->cache->delete('users_' . $customerId);
-
-            return $this->json(
-                [],
-                Response::HTTP_OK
-            );
-        } catch (NotEncodableValueException $e) {
-            return $this->json([
-                'status' => Response::HTTP_BAD_REQUEST,
-                'message' => $e->getMessage()
-            ], Response::HTTP_BAD_REQUEST);
+        if (count($errors) > 0) {
+            $errorsString = (string) $errors;
+            throw new Exception($errorsString, Response::HTTP_BAD_REQUEST);
         }
+
+        if ($userJson->getEmail()) {
+            $user->setEmail($userJson->getEmail());
+        }
+
+        if ($userJson->getPassword()) {
+            $user->setPassword($this->hasher->hashPassword($user, $userJson->getPassword()));
+        }
+
+        if ($userJson->getfullName()) {
+            $user->setFullName($userJson->getFullName());
+        }
+
+        $user->setUpdatedAt(new DateTime());
+
+        $em->flush();
+
+        $customerId = $this->getUser()->getCustomer()->getId();
+
+        $this->cache->delete('users_' . $customerId);
+
+        return $this->json(
+            [],
+            Response::HTTP_OK
+        );
     }
 
     /**

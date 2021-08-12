@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Repository\PhoneRepository;
+use Exception;
 use JMS\Serializer\SerializationContext;
 use JMS\Serializer\Serializer;
 use JMS\Serializer\SerializerInterface as JMSInterface;
@@ -73,6 +74,10 @@ class PhoneController extends AbstractController
     public function show($id, JMSInterface $serializer)
     {
         $phone = $this->phoneRepository->findOneBy(['id' => $id]);
+
+        if($phone === null) {
+            throw new Exception('phone not found', Response::HTTP_NOT_FOUND);
+        }
 
         $json = $serializer->serialize(
             $phone, 
