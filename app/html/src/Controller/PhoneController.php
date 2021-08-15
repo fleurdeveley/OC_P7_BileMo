@@ -8,6 +8,7 @@ use JMS\Serializer\SerializationContext;
 use JMS\Serializer\Serializer;
 use JMS\Serializer\SerializerInterface as JMSInterface;
 use Knp\Component\Pager\PaginatorInterface;
+use OpenApi\Annotations as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -29,6 +30,29 @@ class PhoneController extends AbstractController
 
     /**
      * @Route("/phone", name="api_phone_list", methods={"GET"})
+     * 
+     * @OA\Get(summary="Get list of BileMo phones")
+     * @OA\Response(
+     *     response=JsonResponse::HTTP_OK,
+     *     description="Returns the list of phones"
+     * )
+     * @OA\Response(
+     *     response=Response::HTTP_UNAUTHORIZED,
+     *     description="Invalid JWT Token"
+     * )
+     * @OA\Parameter(
+     *     name="page",
+     *     in="query",
+     *     description="The page number",
+     *     @OA\Schema(type="int", default = "1")
+     * )
+     * @OA\Parameter(
+     *     name="limit",
+     *     in="query",
+     *     description="Number of phones by page",
+     *     @OA\Schema(type="int", default = 5)
+     * )
+     * @OA\Tag(name="Phones")
      */
     public function index(
         PaginatorInterface $paginator, 
@@ -70,6 +94,21 @@ class PhoneController extends AbstractController
 
     /**
      * @Route("/phone/{id}", name="api_phone_details", methods={"GET"})
+     * 
+     * @OA\Get(summary="Get details of a phone")
+     * @OA\Response(
+     *     response=JsonResponse::HTTP_OK,
+     *     description="Returns a phone"
+     * )
+     * @OA\Response(
+     *     response=JsonResponse::HTTP_NOT_FOUND,
+     *     description="Phone not found"
+     * )
+     * @OA\Response(
+     *     response=Response::HTTP_UNAUTHORIZED,
+     *     description="Invalid JWT Token"
+     * )
+     * @OA\Tag(name="Phones")
      */
     public function show($id, JMSInterface $serializer)
     {
