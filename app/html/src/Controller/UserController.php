@@ -9,9 +9,11 @@ use App\Repository\CustomerRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use JMS\Serializer\SerializationContext;
+use JMS\Serializer\SerializerInterface as JMSInterface;
 use JMS\Serializer\Serializer;
-use Symfony\Contracts\Cache\ItemInterface;
 use Knp\Component\Pager\PaginatorInterface;
+use OpenApi\Annotations as OA;
+use Symfony\Contracts\Cache\ItemInterface;
 use Symfony\Contracts\Cache\CacheInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -22,7 +24,6 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Serializer\Exception\NotEncodableValueException;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
-use JMS\Serializer\SerializerInterface as JMSInterface;
 
 class UserController extends AbstractController
 {
@@ -48,6 +49,29 @@ class UserController extends AbstractController
 
     /**
      * @Route("/user", name="api_user_list", methods={"GET"})
+     * 
+     * @OA\Get(summary="Get list of BileMo users")
+     * @OA\Response(
+     *     response=JsonResponse::HTTP_OK,
+     *     description="Returns the list of users"
+     * )
+     * @OA\Response(
+     *     response=Response::HTTP_UNAUTHORIZED,
+     *     description="Invalid JWT Token"
+     * )
+     * @OA\Parameter(
+     *     name="page",
+     *     in="query",
+     *     description="The page number",
+     *     @OA\Schema(type="int", default = "1")
+     * )
+     * @OA\Parameter(
+     *     name="limit",
+     *     in="query",
+     *     description="Number of users by page",
+     *     @OA\Schema(type="int", default = 5)
+     * )
+     * @OA\Tag(name="Users")
      */
     public function index(
         PaginatorInterface $paginator,
@@ -95,6 +119,21 @@ class UserController extends AbstractController
 
     /**
      * @Route("/user/{id}", name="api_user_details", methods={"GET"})
+     * 
+     * @OA\Get(summary="Get details of a user")
+     * @OA\Response(
+     *     response=JsonResponse::HTTP_OK,
+     *     description="Returns a user"
+     * )
+     * @OA\Response(
+     *     response=JsonResponse::HTTP_NOT_FOUND,
+     *     description="User not found"
+     * )
+     * @OA\Response(
+     *     response=Response::HTTP_UNAUTHORIZED,
+     *     description="Invalid JWT Token"
+     * )
+     * @OA\Tag(name="Users")
      */
     public function show($id, JMSInterface $serializer)
     {
@@ -125,6 +164,46 @@ class UserController extends AbstractController
 
     /**
      * @Route("/user", name="api_user_create", methods={"POST"})
+     * 
+     * @OA\Post(summary="Create a new user")
+     * @OA\RequestBody(
+     *     description="Create a new user",
+     *     required=true,
+     *     @OA\MediaType(
+     *         mediaType="application/Json",
+     *         @OA\Schema(
+     *             type="object",
+     *             @OA\Property(
+     *                 property="fullName",
+     *                 description="Fisrtname and lastname for user identification",
+     *                 type="string"
+     *             ),     
+     *             @OA\Property(
+     *                 property="email",
+     *                 description="User's email",
+     *                 type="string"
+     *             ),
+     *             @OA\Property(
+     *                 property="password",
+     *                 description="Password chosen by the user with a minimum of height characters, one uppercase letter, one special character and one number",
+     *                 type="string"
+     *             )
+     *         )
+     *     )
+     * )
+     * @OA\Response(
+     *     response=JsonResponse::HTTP_CREATED,
+     *     description="Returns the new user"
+     * )
+     * @OA\Response(
+     *     response=JsonResponse::HTTP_BAD_REQUEST,
+     *     description="Bad Json syntax or incorrect data"
+     * )
+     * @OA\Response(
+     *     response=Response::HTTP_UNAUTHORIZED,
+     *     description="Invalid JWT Token"
+     * )
+     * @OA\Tag(name="Users")
      */
     public function create(
         Request $request,
@@ -163,6 +242,46 @@ class UserController extends AbstractController
 
     /**
      * @Route("/user/{id}", name="api_user_update", methods={"PUT"})
+     * 
+     * @OA\Put(summary="Update a user")
+     * @OA\RequestBody(
+     *     description="User data to modify : put only the fields to modify",
+     *     required=true,
+     *     @OA\MediaType(
+     *         mediaType="application/Json",
+     *         @OA\Schema(
+     *             type="object",
+     *             @OA\Property(
+     *                 property="fullName",
+     *                 description="Fisrtname and lastname for user identification",
+     *                 type="string"
+     *             ),     
+     *             @OA\Property(
+     *                 property="email",
+     *                 description="User's email",
+     *                 type="string"
+     *             ),
+     *             @OA\Property(
+     *                 property="password",
+     *                 description="Password chosen by the user",
+     *                 type="string"
+     *             )
+     *         )
+     *     )
+     * )
+     * @OA\Response(
+     *     response=JsonResponse::HTTP_OK,
+     *     description="Returns a modified user"
+     * )
+     * @OA\Response(
+     *     response=JsonResponse::HTTP_BAD_REQUEST,
+     *     description="Bad Json syntax or incorrect data"
+     * )
+     * @OA\Response(
+     *     response=Response::HTTP_UNAUTHORIZED,
+     *     description="Invalid JWT Token"
+     * )
+     * @OA\Tag(name="Users")
      */
     public function update(Request $request, EntityManagerInterface $em, $id)
     {
@@ -205,6 +324,17 @@ class UserController extends AbstractController
 
     /**
      * @Route("/user/{id}", name="api_user_delete", methods={"DELETE"})
+     * 
+     * @OA\Delete(summary="Delete a user")
+     * @OA\Response(
+     *     response=JsonResponse::HTTP_NO_CONTENT,
+     *     description="Delete a user"
+     * )
+     * @OA\Response(
+     *     response=Response::HTTP_UNAUTHORIZED,
+     *     description="Invalid JWT Token"
+     * )
+     * @OA\Tag(name="Users")
      */
     public function delete(User $user, EntityManagerInterface $em)
     {
