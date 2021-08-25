@@ -48,7 +48,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private $id;
 
     /**
-     * @ORM\Column(type="string", length=180, unique=true)
+     * @ORM\Column(type="string", length=180)
+     * @Assert\NotBlank(message="Veuillez renseigner votre email.")
      * @Assert\Email(message="Veuillez renseigner un email valide.")
      * @Groups({"user:list", "user:details"})
      */

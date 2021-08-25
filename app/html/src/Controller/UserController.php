@@ -10,7 +10,6 @@ use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use JMS\Serializer\SerializationContext;
 use JMS\Serializer\SerializerInterface as JMSInterface;
-use JMS\Serializer\Serializer;
 use Knp\Component\Pager\PaginatorInterface;
 use OpenApi\Annotations as OA;
 use Symfony\Contracts\Cache\ItemInterface;
@@ -18,30 +17,28 @@ use Symfony\Contracts\Cache\CacheInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\Serializer\Exception\NotEncodableValueException;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 class UserController extends AbstractController
 {
-    protected $cache;
     protected $userRepository;
+    protected $cache;
     protected $serializer;
     protected $validator;
     protected $hasher;
 
     public function __construct(
-        CacheInterface $cache,
         UserRepository $userRepository,
-        SerializerInterface $serializer,
+        CacheInterface $cache,
+        JMSInterface $serializer,
         ValidatorInterface $validator,
         UserPasswordHasherInterface $hasher
-    ) {
-        $this->cache = $cache;
+    ) 
+    {
         $this->userRepository = $userRepository;
+        $this->cache = $cache;
         $this->serializer = $serializer;
         $this->validator = $validator;
         $this->hasher = $hasher;
@@ -52,7 +49,7 @@ class UserController extends AbstractController
      * 
      * @OA\Get(summary="Get list of BileMo users")
      * @OA\Response(
-     *     response=JsonResponse::HTTP_OK,
+     *     response=Response::HTTP_OK,
      *     description="Returns the list of users"
      * )
      * @OA\Response(
@@ -75,9 +72,9 @@ class UserController extends AbstractController
      */
     public function index(
         PaginatorInterface $paginator,
-        Request $request,
-        JMSInterface $serializer
-    ): Response {
+        Request $request
+    ): Response 
+    {
         $userRepository = $this->userRepository;
 
         $customer_id = $this->getUser()->getCustomer()->getId();
@@ -104,7 +101,7 @@ class UserController extends AbstractController
             'meta' => $pagination->getPaginationData()
         ];
 
-        $json = $serializer->serialize(
+        $json = $this->serializer->serialize(
             $result,
             'json',
             SerializationContext::create()->setGroups(array('user:list'))
@@ -122,11 +119,11 @@ class UserController extends AbstractController
      * 
      * @OA\Get(summary="Get details of a user")
      * @OA\Response(
-     *     response=JsonResponse::HTTP_OK,
+     *     response=Response::HTTP_OK,
      *     description="Returns a user"
      * )
      * @OA\Response(
-     *     response=JsonResponse::HTTP_NOT_FOUND,
+     *     response=Response::HTTP_NOT_FOUND,
      *     description="User not found"
      * )
      * @OA\Response(
@@ -135,7 +132,7 @@ class UserController extends AbstractController
      * )
      * @OA\Tag(name="Users")
      */
-    public function show($id, JMSInterface $serializer)
+    public function show($id): Response
     {
         $customerId = $this->getUser()->getCustomer()->getId();
 
@@ -149,7 +146,7 @@ class UserController extends AbstractController
             throw new Exception('unauthorized', Response::HTTP_UNAUTHORIZED);
         }
 
-        $json = $serializer->serialize(
+        $json = $this->serializer->serialize(
             $userBdd,
             'json',
             SerializationContext::create()->setGroups(array('user:details'))
@@ -192,11 +189,11 @@ class UserController extends AbstractController
      *     )
      * )
      * @OA\Response(
-     *     response=JsonResponse::HTTP_CREATED,
+     *     response=Response::HTTP_CREATED,
      *     description="Returns the new user"
      * )
      * @OA\Response(
-     *     response=JsonResponse::HTTP_BAD_REQUEST,
+     *     response=Response::HTTP_BAD_REQUEST,
      *     description="Bad Json syntax or incorrect data"
      * )
      * @OA\Response(
@@ -209,7 +206,8 @@ class UserController extends AbstractController
         Request $request,
         EntityManagerInterface $em,
         CustomerRepository $customerRepository
-    ) {
+    ): Response
+    {
         $user = $this->serializer->deserialize($request->getContent(), User::class, 'json');
 
         $customerId = $this->getUser()->getCustomer()->getId();
@@ -232,11 +230,16 @@ class UserController extends AbstractController
 
         $this->cache->delete('users_' . $customerId);
 
-        return $this->json(
+        $json = $this->serializer->serialize(
             $user,
+            'json',
+            SerializationContext::create()->setGroups(array('user:list'))
+        );
+
+        return new Response(
+            $json,
             Response::HTTP_CREATED,
-            [],
-            ['groups' => 'user:details']
+            array('Content-Type' => 'application/json')
         );
     }
 
@@ -270,11 +273,11 @@ class UserController extends AbstractController
      *     )
      * )
      * @OA\Response(
-     *     response=JsonResponse::HTTP_OK,
+     *     response=Response::HTTP_OK,
      *     description="Returns a modified user"
      * )
      * @OA\Response(
-     *     response=JsonResponse::HTTP_BAD_REQUEST,
+     *     response=Response::HTTP_BAD_REQUEST,
      *     description="Bad Json syntax or incorrect data"
      * )
      * @OA\Response(
@@ -283,25 +286,18 @@ class UserController extends AbstractController
      * )
      * @OA\Tag(name="Users")
      */
-    public function update(Request $request, EntityManagerInterface $em, $id)
+    public function update(Request $request, EntityManagerInterface $em, $id): Response
     {
         $user = $this->userRepository->findOneBy(['id' => $id]);
 
         $userJson = $this->serializer->deserialize($request->getContent(), User::class, 'json');
-
-        $errors = $this->validator->validate($userJson);
-
-        if (count($errors) > 0) {
-            $errorsString = (string) $errors;
-            throw new Exception($errorsString, Response::HTTP_BAD_REQUEST);
-        }
 
         if ($userJson->getEmail()) {
             $user->setEmail($userJson->getEmail());
         }
 
         if ($userJson->getPassword()) {
-            $user->setPassword($this->hasher->hashPassword($user, $userJson->getPassword()));
+            $user->setPassword($userJson->getPassword());
         }
 
         if ($userJson->getfullName()) {
@@ -310,15 +306,25 @@ class UserController extends AbstractController
 
         $user->setUpdatedAt(new DateTime());
 
+        $errors = $this->validator->validate($user);
+
+        if (count($errors) > 0) {
+            $errorsString = (string) $errors;
+            throw new Exception($errorsString, Response::HTTP_BAD_REQUEST);
+        }
+
+        $user->setPassword($this->hasher->hashPassword($user, $userJson->getPassword()));
+
         $em->flush();
 
         $customerId = $this->getUser()->getCustomer()->getId();
 
         $this->cache->delete('users_' . $customerId);
 
-        return $this->json(
-            [],
-            Response::HTTP_OK
+        return new Response(
+            json_encode([]),
+            Response::HTTP_OK,
+            array('Content-Type' => 'application/json')
         );
     }
 
@@ -327,7 +333,7 @@ class UserController extends AbstractController
      * 
      * @OA\Delete(summary="Delete a user")
      * @OA\Response(
-     *     response=JsonResponse::HTTP_NO_CONTENT,
+     *     response=Response::HTTP_NO_CONTENT,
      *     description="Delete a user"
      * )
      * @OA\Response(
@@ -336,7 +342,7 @@ class UserController extends AbstractController
      * )
      * @OA\Tag(name="Users")
      */
-    public function delete(User $user, EntityManagerInterface $em)
+    public function delete(User $user, EntityManagerInterface $em): Response
     {
         $em->remove($user);
         $em->flush();
@@ -345,9 +351,10 @@ class UserController extends AbstractController
 
         $this->cache->delete('users_' . $customerId);
 
-        return $this->json(
-            [],
-            Response::HTTP_NO_CONTENT
+        return new Response(
+            json_encode([]),
+            Response::HTTP_NO_CONTENT,
+            array('Content-Type' => 'application/json')
         );
     }
 }
