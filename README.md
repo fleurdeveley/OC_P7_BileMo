@@ -3,7 +3,7 @@
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/6bc96c0c45644b23bfc98c8de4717fee)](https://www.codacy.com/gh/fleurdeveley/OC_P7_BileMo/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=fleurdeveley/OC_P7_BileMo&amp;utm_campaign=Badge_Grade)
 
 ## Description of the project
-  * TODO
+  * As a part of study project, creation of a web service exposing an API.
 
 ## Technologies
   * PHP 7.4
@@ -12,7 +12,11 @@
   * GitHub
 
 ## PHP Dependencies
-  * TODO
+  * [JMSSerializerBundle](https://github.com/schmittjoh/JMSSerializerBundle)
+  * [KnpPaginatorBundle](https://github.com/KnpLabs/KnpPaginatorBundle )
+  * [LexikJWTAuthenticationBundle](https://github.com/lexik/LexikJWTAuthenticationBundle)
+  * [BazingaHateoasBundle](https://github.com/willdurand/Hateoas)
+  * [NelmioApiDocBundle](https://github.com/nelmio/NelmioApiDocBundle)
 
 ## Source
  1. Clone the GitHub repository :
@@ -77,10 +81,12 @@
   * User : admin
   * Password : password
 
-## Access to the project
-  * http://localhost:8080
-  * Login : TODO
-  * Password : TODO
+## Access to the API documentation
+  * http://localhost:8080/api/doc
+
+## Credentials
+  * Login : user0@gmail.com
+  * Password : password
 
 ## Author 
 Fleur (https://github.com/fleurdeveley)

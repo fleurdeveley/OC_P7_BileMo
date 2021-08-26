@@ -48,7 +48,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private $id;
 
     /**
-     * @ORM\Column(type="string", length=180, unique=true)
+     * @ORM\Column(type="string", length=180)
+     * @Assert\NotBlank(message="Veuillez renseigner votre email.")
      * @Assert\Email(message="Veuillez renseigner un email valide.")
      * @Groups({"user:list", "user:details"})
      */
@@ -64,7 +65,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      * @var string The hashed password
      * @ORM\Column(type="string")
      * @Assert\NotBlank(message="Veuillez renseigner votre mot de passe.")
-     * @Assert\Regex("/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/", message="Votre mot de passe doit contenir au moins 8 caractères, une lettre minuscule, un chiffre et un caractère spécial.")
+     * @Assert\Regex("/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/", message="Votre mot de passe doit contenir au moins 8 caractères, une lettre majuscule, un chiffre et un caractère spécial.")
      */
     private $password;
 
