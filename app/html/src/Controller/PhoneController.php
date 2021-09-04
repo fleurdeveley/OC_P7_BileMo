@@ -2,18 +2,17 @@
 
 namespace App\Controller;
 
-use App\Repository\PhoneRepository;
 use Exception;
-use JMS\Serializer\SerializationContext;
-use JMS\Serializer\SerializerInterface as JMSInterface;
-use Knp\Component\Pager\PaginatorInterface;
+use App\Services\CacheService;
 use OpenApi\Annotations as OA;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use App\Services\PaginatorService;
+use App\Repository\PhoneRepository;
+use JMS\Serializer\SerializationContext;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Contracts\Cache\CacheInterface;
-use Symfony\Contracts\Cache\ItemInterface;
+use JMS\Serializer\SerializerInterface as JMSInterface;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 class PhoneController extends AbstractController
 {
@@ -56,28 +55,16 @@ class PhoneController extends AbstractController
      * @OA\Tag(name="Phones")
      */
     public function index(
-        PaginatorInterface $paginator, 
+        PaginatorService $paginator, 
         Request $request,
-        CacheInterface $cache
+        CacheService $cache
     ): Response
     {
         $phoneRepository = $this->phoneRepository;
 
-        $data = $cache->get('phones', function(ItemInterface $item) use($phoneRepository){
-            $item->expiresAfter(3600);
-            return $phoneRepository->findAll();
-        });
+        $data = $cache->getPhones($phoneRepository);
 
-        $pagination = $paginator->paginate(
-            $data,
-            $request->query->getInt('page', 1),
-            $request->query->getInt('limit', 5)
-        );
-
-        $result = [
-            'phones' => $pagination->getItems(), 
-            'meta' => $pagination->getPaginationData()
-        ];
+        $result = $paginator->paginate($data, $request);
 
         $json = $this->serializer->serialize(
             $result,
