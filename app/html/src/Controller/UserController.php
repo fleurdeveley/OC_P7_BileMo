@@ -3,20 +3,19 @@
 namespace App\Controller;
 
 use DateTime;
+use Exception;
 use App\Entity\User;
+use App\Services\CacheService;
+use OpenApi\Annotations as OA;
 use App\Repository\UserRepository;
+use App\Services\PaginatorService;
 use App\Repository\CustomerRepository;
 use Doctrine\ORM\EntityManagerInterface;
-use Exception;
 use JMS\Serializer\SerializationContext;
-use JMS\Serializer\SerializerInterface as JMSInterface;
-use Knp\Component\Pager\PaginatorInterface;
-use OpenApi\Annotations as OA;
-use Symfony\Contracts\Cache\ItemInterface;
-use Symfony\Contracts\Cache\CacheInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use JMS\Serializer\SerializerInterface as JMSInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
@@ -31,7 +30,7 @@ class UserController extends AbstractController
 
     public function __construct(
         UserRepository $userRepository,
-        CacheInterface $cache,
+        CacheService $cache,
         JMSInterface $serializer,
         ValidatorInterface $validator,
         UserPasswordHasherInterface $hasher
@@ -71,35 +70,18 @@ class UserController extends AbstractController
      * @OA\Tag(name="Users")
      */
     public function index(
-        PaginatorInterface $paginator,
+        CacheService $cache,
+        PaginatorService $paginator, 
         Request $request
     ): Response 
     {
-        $userRepository = $this->userRepository;
-
         $customer_id = $this->getUser()->getCustomer()->getId();
 
         $key = 'users_' . $customer_id;
 
-        $data = $this->cache->get(
-            $key,
-            function (ItemInterface $item)
-            use ($userRepository, $customer_id) {
-                $item->expiresAfter(3600);
-                return $userRepository->findBy(['customer' => $customer_id]);
-            }
-        );
+        $data = $cache->getUsers($key, $customer_id, $this->userRepository);
 
-        $pagination = $paginator->paginate(
-            $data,
-            $request->query->getInt('page', 1),
-            $request->query->getInt('limit', 5)
-        );
-
-        $result = [
-            'users' => $pagination->getItems(),
-            'meta' => $pagination->getPaginationData()
-        ];
+        $result = $paginator->paginate($data, $request);
 
         $json = $this->serializer->serialize(
             $result,
@@ -172,7 +154,7 @@ class UserController extends AbstractController
      *             type="object",
      *             @OA\Property(
      *                 property="fullName",
-     *                 description="Fisrtname and lastname for user identification",
+     *                 description="Fisrtname and lastname for usereyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJpYXQiOjE2MzA2NjAzNjYsImV4cCI6MTYzMDY2MDQ4Niwicm9sZXMiOlsiUk9MRV9VU0VSIl0sInVzZXJuYW1lIjoidXNlcjNAZ21haWwuY29tIn0.p5OyWLypypdjDFYfdRtKYFQpTqdCWA7gP5I128oN1VVlsbvK5jRufNdp6CYwV26GtMjScmtiQsN8om-rvQ7OWA7Ktrpt_AoKyyu5x3c2D2ZqZZlKb8nPG-liRUInnFm9TG1naLkqEfveGdrebJDR--NO3QOC2_90AZsdLOeyePy5nbA2qQkZrrIYuDlD_Kw3FeFov4bOVA14iwU9KyZj4U9PZO45NjTY55c6a3dlw3Ow9UWSoK8mNlmXLKBNSogY1g_40ZHZdUD1Znpy2gcrVkg7SeUxGrJHKLIYTWcBi0e9byvahe4K-TBbSv2LQHxlsUs2CVACsslDumoJvesZ4Q identification",
      *                 type="string"
      *             ),     
      *             @OA\Property(
